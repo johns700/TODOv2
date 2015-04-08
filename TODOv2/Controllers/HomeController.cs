@@ -16,6 +16,7 @@ namespace TODOv2.Controllers
         // Get
         public ActionResult Index()
         {
+            // Keep track of whether a user has just logged in or out
             if (Session["UserJustLoggedIn"] == null)
             {
                 Session["UserJustLoggedIn"] = false;
@@ -25,23 +26,20 @@ namespace TODOv2.Controllers
                 Session["UserJustLoggedOut"] = false;
             }
 
+            // User just logged in
             if ((bool)Session["UserJustLoggedIn"] == true)
             {
                 // Add the current TODO list to their list
                 AddItemsToDatabase();
                 PopulateListFromDatabase();
 
-                // After a local copy of the user's todo list has been created we can delete
-                // all item records in the database & just work with the local copy. When
-                // the user logs out the local copy will be added back into the database. AddItemsToDatabase()
-                DeleteListFromDatabase(); 
- 
                 Session["UserJustLoggedIn"] = false;
             }
 
+            // User just logged out
             if ((bool)Session["UserJustLoggedOut"] == true)
             {
-                AddItemsToDatabase();
+                Session.Remove("TODO");
                 Session["UserJustLoggedOut"] = false;
             }
 
@@ -60,18 +58,32 @@ namespace TODOv2.Controllers
         {
             var context = HttpContext.GetOwinContext().Get<ApplicationDbContext>();
 
-            // Add new items to list
-            if (TodoItem != "")
-            {
-                model.Items.Add(new TodoItem { Task = TodoItem, Complete = false });
-            }
+            // If a user is logged in, make changes to the database aswell as the local copy
+            bool bUserLoggedIn = User.Identity.IsAuthenticated;
 
-            // Remove items from local list
+            // Are there any items that need to be deleted?
+            if (bUserLoggedIn)
+            {
+                DeleteItemsFromDatabase(model);
+            }
+            
+            // Remove completed items from local list
             model.Items.RemoveAll(item => item.Complete == true);
 
-            // Save list into Session state until we add it to the database
+            // Add new items to list
+            TodoItem newItem = new TodoItem { Task = TodoItem, Complete = false };
+            if (TodoItem != "")
+            {
+                model.Items.Add(newItem);
+            }
+
+            // Save local copy of the list
             Session["TODO"] = model;
-            Session["Update"] = true;
+
+            if (bUserLoggedIn && TodoItem != "")
+            { 
+                AddItemToDatabase(newItem);
+            }
 
             // Copy values to new model & clear the viewmodel
             // This is done because there were issues with the ViewModel retaining its state between requests
@@ -81,14 +93,23 @@ namespace TODOv2.Controllers
             return View(newModel);
         }
 
-        private void AddItemsToDatabase()
+        private void AddItemToDatabase(TodoItem item)
         {
             // Get references
             var context = HttpContext.GetOwinContext().Get<ApplicationDbContext>();
             var userManager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
 
-            // Find the user
             ApplicationUser user = userManager.FindById(User.Identity.GetUserId());
+
+            user.Items.Add(item);
+            context.SaveChanges();
+        }
+
+        private void AddItemsToDatabase()
+        {
+            // Get references
+            var context = HttpContext.GetOwinContext().Get<ApplicationDbContext>();
+            var userManager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
 
             // Get the current TODO list
             TodoViewModel sessionModel = new TodoViewModel();
@@ -97,10 +118,32 @@ namespace TODOv2.Controllers
                 sessionModel = (TodoViewModel)Session["TODO"];
             }
 
+            ApplicationUser user = userManager.FindById(User.Identity.GetUserId());
+
             // Add todo list to database
             foreach (TodoItem item in sessionModel.Items)
             {
                 user.Items.Add(item);
+            }
+            context.SaveChanges();
+        }
+
+        private void DeleteItemsFromDatabase(TodoViewModel model)
+        {
+            // Get references
+            var context = HttpContext.GetOwinContext().Get<ApplicationDbContext>();
+
+            foreach (TodoItem item in model.Items)
+            {
+                if (item.Complete == true)
+                {
+                    // Get the record that needs to be deleted
+                    var x = (from n in context.TodoItems
+                             where n.ID == item.ID
+                             select n).First();
+
+                    context.TodoItems.Remove(x);
+                }
             }
             context.SaveChanges();
         }
@@ -117,77 +160,8 @@ namespace TODOv2.Controllers
             string userID = User.Identity.GetUserId();
             TodoViewModel newModel = new TodoViewModel { Items = context.Users.Find(userID).Items.ToList() };
 
-            // Create new list in Session
             Session["TODO"] = newModel;
         }
 
-        private void DeleteListFromDatabase()
-        {
-            // Get references
-            var context = HttpContext.GetOwinContext().Get<ApplicationDbContext>();
-            var userManager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
-
-            // Clear all entries from the current user
-            ApplicationUser user = userManager.FindById(User.Identity.GetUserId());
-
-            //context.TodoItems.
-            //// Get the record that needs to be deleted
-            //var x = (from n in context.TodoItems
-            //         where n. == userID
-            //         select n).First();
-
-            // This method doesn't work - It just removes the ApplicationUserID from the TodoItems table
-            context.Users.Find(User.Identity.GetUserId()).Items.Clear();
-            context.SaveChanges();
-        }
-
-            /*
-        [HttpPost]
-        public ActionResult Index(TodoViewModel model, string TodoItem)
-        {
-            // Get references
-            var context = HttpContext.GetOwinContext().Get<ApplicationDbContext>();
-            var userManager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
-
-            // Find the user
-            ApplicationUser user = userManager.FindById(User.Identity.GetUserId());
-
-            // If the user has typed a todo item
-            if (TodoItem != "")
-            {
-                // Add todo
-                if (user != null)
-                {
-                    user.Items.Add(new TodoItem { Task = TodoItem, Complete = false });
-                    context.SaveChanges();
-                }
-            }
-
-            // Get current user's ID
-            string userID = User.Identity.GetUserId();
-
-            // If the user has deleted any flag them as complete in the database
-            foreach (TodoItem item in model.Items)
-            {
-                if (item.Complete == true)
-                {
-                    // Get the record that needs to be deleted
-                    var x = (from n in context.TodoItems
-                             where n.ID == item.ID
-                             select n).First();
-
-                    context.TodoItems.Remove(x);
-                    context.SaveChanges();
-                }  
-            }
-
-            ModelState.Clear();
-            // Retrieve the user's todo list
-
-            model = new TodoViewModel { Items = context.Users.Find(userID).Items.ToList() };
-
-            return View(model);
-        }
-             * */
     }
 }
