@@ -1,0 +1,8 @@
+﻿@model TODOv2.Models.TodoItem
+
+@Html.HiddenFor(m => m.ID)
+<p>
+    @Html.CheckBoxFor(m => m.Complete)
+    @Html.EditorFor(m => m.Task)
+</p>
+

@@ -1,0 +1,11 @@
+﻿
+@model TODOv2.Models.TodoViewModel
+
+@using (Html.BeginForm())
+{
+    @Html.ValidationSummary(true)
+
+    @Html.EditorFor(m => m.Items) <br />
+    
+    <input type="submit" />
+}

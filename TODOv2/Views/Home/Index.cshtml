@@ -1,0 +1,29 @@
+﻿@model TODOv2.Models.TodoViewModel
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="row">
+    <div class="col-md-4">
+
+    </div>
+    <div class="col-md-4">
+
+        <h3>Hmmm.. What do I need to do??</h3>
+        <hr />
+
+        @using (Html.BeginForm())
+        {
+            @Html.ValidationSummary(true)
+            
+            <p>@Html.TextBox("TodoItem", "") <input type="submit"   /></p>
+            <hr />      
+            
+            <p>@Html.EditorFor(m => m.Items)</p>
+        }
+
+    </div>
+    <div class="col-md-4">
+    
+    </div>
+</div>

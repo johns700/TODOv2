@@ -1,0 +1,38 @@
+﻿@model IEnumerable<TODOv2.Models.TodoItem>
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="row">
+    <div class="col-md-4">
+
+    </div>
+    <div class="col-md-4">
+        <h2>TODO..</h2>
+
+        <hr />
+
+        @using (Html.BeginForm("Index", "Home", FormMethod.Post))
+        {
+            @Html.ValidationSummary(true)
+
+            <p> @Html.TextBox("TodoItem")</p>
+        }
+
+        @foreach (var item in Model)
+        {
+            <p>
+                @Html.CheckBoxFor(modelItem => item.Complete)
+                @Html.TextBoxFor(modelItem => item.Task)
+            </p>
+        }
+
+
+        <p>
+            <a class="btn btn-default" href="~/Home/Delete">Clear Items</a>
+        </p>
+    </div>
+    <div class="col-md-4">
+
+    </div>
+</div>

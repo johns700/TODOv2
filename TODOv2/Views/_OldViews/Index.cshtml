@@ -1,0 +1,108 @@
+﻿@model IEnumerable<TODO_Version_1.Models.BasicContainer>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <style type="text/css">
+        #wrapper {
+         background-color: #F00; 
+         width: 400px;
+         margin-left: auto;
+         margin-right: auto;
+        }
+
+        #wrapper2 {
+         background-color: #F00; 
+         width: 200px;
+         margin: 0, auto;
+         display: block;
+        }
+
+        #loginBar {
+         background-color: #00; 
+         width: 400px;
+         margin-left: auto;
+         margin-right: auto;
+        }
+
+        #centeredText {
+         background-color: #00; 
+         text-align:center;
+        }
+
+        .temp123{
+         text-align:center;
+        }
+        .temp123 > input{
+         text-align:left;
+        }
+
+    </style>
+    <title>Index</title>
+</head>
+<body>
+    <div id="loginBar"> @Html.ActionLink("Login", "Create", "BasicContainer")  @Html.ActionLink("Register", "Edit", "BasicContainer")</div>
+    <div id="wrapper">
+
+        <h1 id="centeredText">TODO..</h1>
+        
+
+        @using (Html.BeginForm("Index", "BasicContainer", FormMethod.Post))
+        {
+            @Html.ValidationSummary(true)
+
+        <div id="wrapper2">
+            <input type="text" />
+        </div>
+        <div id="wrapper2">
+            @Html.TextBox("TodoItem")
+        </div>
+            <p>
+
+                <!--<input type="submit" value="save" />-->
+            </p>
+
+            <p>
+
+            </p>
+            <table class="table">
+                <tr>
+                    <th>
+
+                    </th>
+                    <th></th>
+                </tr>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.CheckBoxFor(modelItem => item.TaskComplete)
+                        </td>
+                        <td>
+                            <!--@Html.DisplayFor(modelItem => item.Text1)-->
+                            @Html.TextBoxFor(modelItem => item.Text1)
+                        </td>
+                        <!--
+                        <td>
+                            @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                            @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                            @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                        </td>
+                        -->
+                    </tr>
+                }
+
+
+            </table>
+
+        }
+    </div>
+</body>
+</html>
