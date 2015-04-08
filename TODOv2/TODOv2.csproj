@@ -242,9 +242,6 @@
     <Content Include="Views\Manage\VerifyPhoneNumber.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
-    <Content Include="Views\_OldViews\Index.cshtml" />
-    <Content Include="Views\Home\Delete.cshtml" />
-    <Content Include="Views\Home\LetsSeeIfThisWorks.cshtml" />
     <Content Include="Views\Home\EditorTemplates\TodoItem.cshtml" />
     <Content Include="Views\Home\DisplayTemplates\TodoItem.cshtml" />
   </ItemGroup>
